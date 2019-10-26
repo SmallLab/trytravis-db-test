@@ -1,14 +1,8 @@
-dist: xenial
-language: bash
-addons:
-  apt:
-    sources:
-      - ppa:deadsnakes/ppa
-    packages:
-    - python3.6
-    - python3.6-pip
+language: python
+python:
+  - 3.6
 install:
-- pip3 install ansible molecule testinfra apache-libcloud gcloud
+- pip install ansible molecule testinfra apache-libcloud gcloud
 env:
   matrix:
   - GCE_CREDENTIALS_FILE="$(pwd)/my-key.json"
