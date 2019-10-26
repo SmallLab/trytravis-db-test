@@ -6,7 +6,6 @@
   #no_log: "{{ molecule_no_log }}"
   no_log: false
   vars:
-    cur_dir: "{{ playbook_dir }}"
     ssh_port: 22
     ssh_user: "{{ lookup('env', 'USER') }}"
     ssh_identity_file: "{{ lookup('env', 'HOME') }}/.ssh/google_compute_engine"
@@ -21,7 +20,7 @@
         service_account_email: "{{ lookup('env', 'GCE_SERVICE_ACCOUNT_EMAIL') }}"
         credentials_file: "{{ lookup('env', 'GCE_CREDENTIALS_FILE') }}"
         project_id: "{{ lookup('env', 'GCE_PROJECT_ID') }}"
-        metadata: {"ssh-keys": "{{ ssh_user }}:{{ ssh_pub_file }}"}
+        metadata: '{"ssh-keys": "{{ ssh_user }}:{{ ssh_pub_file }}"}'
       register: server
       with_items: "{{ molecule_yml.platforms }}"
       async: 7200
