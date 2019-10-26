@@ -1,0 +1,6 @@
+ansible>=2.4
+google-auth>=1.6.3
+molecule>=2.6
+testinfra>=1.10
+gcloud
+apache-libcloud

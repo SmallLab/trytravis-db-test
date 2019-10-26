@@ -2,16 +2,15 @@
 - name: Create
   hosts: localhost
   connection: local
-  gather_facts: False
-  no_log: "{{ not lookup('env', 'MOLECULE_DEBUG') | bool }}"
+  gather_facts: false
+  #no_log: "{{ molecule_no_log }}"
+  no_log: false
   vars:
-    molecule_file: "{{ lookup('env', 'MOLECULE_FILE') }}"
-    molecule_instance_config: "{{ lookup('env', 'MOLECULE_INSTANCE_CONFIG') }}"
-    molecule_yml: "{{ lookup('file', molecule_file) | from_yaml }}"
-
+    cur_dir: "{{ playbook_dir }}"
     ssh_port: 22
     ssh_user: "{{ lookup('env', 'USER') }}"
     ssh_identity_file: "{{ lookup('env', 'HOME') }}/.ssh/google_compute_engine"
+    ssh_pub_file: "{{ lookup('file', '../../../google_compute_engine.pub') }}"
   tasks:
     - name: Create molecule instance(s)
       gce:
@@ -22,8 +21,19 @@
         service_account_email: "{{ lookup('env', 'GCE_SERVICE_ACCOUNT_EMAIL') }}"
         credentials_file: "{{ lookup('env', 'GCE_CREDENTIALS_FILE') }}"
         project_id: "{{ lookup('env', 'GCE_PROJECT_ID') }}"
+        metadata: {"ssh-keys": "{{ ssh_user }}:{{ ssh_pub_file }}"}
       register: server
       with_items: "{{ molecule_yml.platforms }}"
+      async: 7200
+      poll: 0
+
+    - name: Wait for instance(s) creation to complete
+      async_status:
+        jid: "{{ item.ansible_job_id }}"
+      register: gce_jobs
+      until: gce_jobs.finished
+      retries: 300
+      with_items: "{{ server.results }}"
 
     # Mandatory configuration for Molecule to function.
 
@@ -35,7 +45,7 @@
           'user': "{{ ssh_user }}",
           'port': "{{ ssh_port }}",
           'identity_file': "{{ ssh_identity_file }}", }
-      with_items: "{{ server.results }}"
+      with_items: "{{ gce_jobs.results }}"
       register: instance_config_dict
       when: server.changed | bool
 
@@ -46,8 +56,6 @@
 
     - name: Dump instance config
       copy:
-        # NOTE(retr0h): Workaround for Ansible 2.2.
-        #               https://github.com/ansible/ansible/issues/20885
         content: "{{ instance_conf | to_json | from_json | molecule_to_yaml | molecule_header }}"
         dest: "{{ molecule_instance_config }}"
       when: server.changed | bool
@@ -58,4 +66,4 @@
         host: "{{ item.address }}"
         search_regex: SSH
         delay: 10
-      with_items: "{{ lookup('file', molecule_instance_config) | from_yaml }}"
+      with_items: "{{ lookup('file', molecule_instance_config) | molecule_from_yaml }}"

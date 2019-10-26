@@ -25,4 +25,3 @@ def test_ip_port(host):
     ip_port = host.addr('127.0.0.1')
     assert ip_port.is_reachable
     assert ip_port.port(27017).is_reachable
-

@@ -1,7 +1,9 @@
+[![Build Status](https://travis-ci.com/SmallLab/test-trevis-gce-db.svg?branch=master)](https://travis-ci.com/SmallLab/test-trevis-gce-db)
+
 Role Name
 =========
 
-A brief description of the role goes here.
+Test TravicCI in db roles
 
 Requirements
 ------------
