@@ -1,7 +1,7 @@
 dist: xenial
 language: bash
 install:
-- pip install ansible molecule testinfra apache-libcloud gcloud
+- sudo pip install ansible molecule testinfra apache-libcloud gcloud
 env:
   matrix:
   - GCE_CREDENTIALS_FILE="$(pwd)/my-key.json"
